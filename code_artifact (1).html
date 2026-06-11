@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>경성의 새벽 (Dawn of Gyeongseong)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for retro/historical Korean feels -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@300;400;600;800&family=Nanum+Myeongjo:wght@400;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Hahmlet', 'Nanum Myeongjo', serif;
+      background-color: #080606; /* Pitch dark reddish stone background */
+    }
+    .text-glow {
+      text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); /* Creepy red text glow */
+    }
+    /* Typing animation support */
+    @keyframes blink {
+      50% { border-color: transparent; }
+    }
+    .cursor-blink::after {
+      content: '|';
+      animation: blink 0.7s infinite;
+    }
+    /* Simple fade in animation for transition overlay */
+    .animate-fade-in {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body class="text-stone-300 min-h-screen flex flex-col justify-between overflow-hidden selection:bg-rose-950 selection:text-rose-100">
+
+  <!-- Header Banner (Optimized space to guarantee single screen fitting) -->
+  <header class="w-full border-b border-stone-900 bg-stone-950/95 py-2.5 px-4 flex flex-row justify-between items-center backdrop-blur z-40">
+    <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-1.5">
+        <span class="text-[10px] text-red-600 tracking-widest font-bold">京城 1934</span>
+        <h1 class="text-base md:text-lg font-black tracking-tight text-red-500 text-glow">경성의 새벽</h1>
+      </div>
+      <!-- BGM switch with immediate user interaction bridge -->
+      <div id="sound-control" class="flex items-center gap-1.5 bg-stone-900 border border-stone-800 px-2.5 py-0.5 rounded-full text-[10px] text-red-400 hover:bg-stone-800 transition-all cursor-pointer select-none" onclick="toggleAudio()">
+        <svg id="sound-icon" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 fill-current" viewBox="0 0 24 24">
+          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zm-8 5.77H2v6h4l5 5V4L6 9z"/>
+        </svg>
+        <span id="sound-text">BGM 켜기</span>
+      </div>
+    </div>
+
+    <!-- Compact Stats Panel -->
+    <div id="stats-panel" class="hidden flex items-center gap-3 text-xs">
+      <div class="flex items-center space-x-1">
+        <span class="text-red-500 font-bold text-[11px]">애국</span>
+        <div class="w-12 sm:w-16 bg-stone-900 rounded-full h-1 overflow-hidden border border-red-950/40">
+          <div id="stat-patriotism-bar" class="bg-red-600 h-full transition-all duration-500" style="width: 50%;"></div>
+        </div>
+        <span id="stat-patriotism" class="font-mono text-red-400 text-[11px]">50</span>
+      </div>
+      <div class="flex items-center space-x-1">
+        <span class="text-emerald-500 font-bold text-[11px]">생존</span>
+        <div class="w-12 sm:w-16 bg-stone-900 rounded-full h-1 overflow-hidden border border-emerald-950/40">
+          <div id="stat-survival-bar" class="bg-emerald-600 h-full transition-all duration-500" style="width: 50%;"></div>
+        </div>
+        <span id="stat-survival" class="font-mono text-emerald-400 text-[11px]">50</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Game Layout (Perfect fit on one single viewport without scroll) -->
+  <main class="flex-grow flex flex-col justify-center items-center px-4 py-2 max-w-2xl mx-auto w-full overflow-hidden">
+    
+    <!-- 1. Start Screen -->
+    <div id="screen-start" class="w-full bg-stone-950/80 border border-red-950/30 rounded-xl p-5 md:p-8 text-center flex flex-col items-center justify-center space-y-6 backdrop-blur shadow-2xl relative overflow-hidden">
+      <!-- Creepy vintage watermark -->
+      <div class="absolute inset-0 opacity-5 pointer-events-none flex items-center justify-center select-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-72 h-72 fill-current text-red-600" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.53c-.26-.81-1-1.4-1.9-1.4h-1v-3c0-.55-.45-1-1-1h-6v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+        </svg>
+      </div>
+
+      <div class="space-y-1.5 relative z-10">
+        <p class="text-red-600 tracking-widest text-[11px] font-bold uppercase">Interactive Suspense Text Novel</p>
+        <h2 class="text-2xl md:text-4xl font-black text-stone-100 tracking-tight leading-tight">경성의 새벽</h2>
+        <p class="text-stone-400 text-xs md:text-sm max-w-md mx-auto leading-relaxed pt-1">
+          "1934년 차가운 음모가 도사린 잔혹한 경성거리.<br>동지들의 피가 묻은 비밀 기밀문서를 무사히 수송하고<br>헌병대의 악랄한 감시망을 뚫고 끝까지 생존하십시오."
+        </p>
+      </div>
+
+      <!-- User Cryptonym Input -->
+      <div class="w-full max-w-xs space-y-1 relative z-10">
+        <label for="player-name" class="block text-left text-[10px] text-red-500 font-bold mb-1 tracking-wider uppercase">밀서 수송에 나설 요원 암호명</label>
+        <input type="text" id="player-name" value="한울" class="w-full bg-stone-900/90 border border-red-950/65 rounded-lg px-3 py-2 text-center text-sm text-stone-200 focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 font-semibold transition">
+      </div>
+
+      <div class="relative z-10 w-full max-w-xs pt-1">
+        <button onclick="startGame()" class="w-full bg-red-950/80 hover:bg-red-900 border border-red-700/40 text-stone-100 hover:text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all transform hover:-translate-y-0.5 duration-200 text-sm">
+          죽음의 작전 개시
+        </button>
+      </div>
+
+      <div class="text-[9px] text-stone-600">
+        * 경고: 본 게임은 괴기적 분위기 조성을 위한 어두운 사운드와 그래픽을 포함하고 있습니다.
+      </div>
+    </div>
+
+    <!-- 2. Main Game Screen -->
+    <div id="screen-game" class="hidden w-full flex flex-col space-y-4">
+      <!-- Compact Eerie Illustration Box (Guarantees NO scroll bar) -->
+      <div class="w-full bg-stone-950 border border-red-950/40 rounded-xl overflow-hidden shadow-xl h-32 sm:h-40 md:h-44 relative flex items-center justify-center">
+        <!-- SVG Graphic box containing terrified silhouettes -->
+        <div id="scene-illustration" class="absolute inset-0 w-full h-full opacity-70">
+          <!-- Spooky SVGs dynamically loaded here -->
+        </div>
+        <!-- Gradient shadow overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-transparent to-stone-950/30 pointer-events-none"></div>
+        
+        <!-- Progress display inside illustration container -->
+        <div class="absolute top-2.5 left-2.5 bg-black/80 border border-red-950/80 px-2 py-0.5 rounded text-[10px] text-red-500 font-bold tracking-wider backdrop-blur-sm z-10">
+          단계: <span id="current-scene-num">1</span> / 4
+        </div>
+        <div id="scene-tag" class="absolute bottom-2.5 left-2.5 bg-black/85 border border-red-950/50 px-2 py-1 rounded text-[10px] text-stone-300 font-semibold tracking-wide z-10">
+          비밀 결사 밀회
+        </div>
+      </div>
+
+      <!-- Dialogue & Typing Area (Height-controlled compact card) -->
+      <div id="dialogue-box" class="w-full bg-stone-950/90 border border-red-950/20 rounded-xl p-4 md:p-5 flex flex-col justify-between min-h-[170px] backdrop-blur relative shadow-lg overflow-hidden">
+        
+        <!-- Standard Dialogue Mode Content -->
+        <div id="dialogue-content" class="space-y-2">
+          <!-- Name tag -->
+          <div class="flex items-center justify-between border-b border-stone-900 pb-1.5">
+            <span id="speaker-name" class="text-red-500 font-bold tracking-wide text-xs md:text-sm">나 (암호명 한울)</span>
+            <span id="dialogue-steps" class="text-[10px] text-stone-600 tracking-widest font-mono">1 / 4</span>
+          </div>
+          
+          <!-- Typing body -->
+          <p id="dialogue-text" class="text-stone-300 text-sm md:text-base leading-relaxed min-h-[64px] break-keep">
+            <!-- Text dynamically typed -->
+          </p>
+        </div>
+
+        <!-- Next button aligned perfectly -->
+        <div id="dialogue-actions" class="flex justify-end pt-2">
+          <button id="btn-next" onclick="nextDialogue()" class="bg-red-950/40 hover:bg-red-900 border border-red-800/40 text-red-300 px-4 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-all hover:translate-x-0.5">
+            <span>대사 읽기</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- PITCH BLACK CHOICE OVERLAY (Fills the entire dialogue-box screen for maximum terror and focus) -->
+        <div id="choices-overlay" class="hidden absolute inset-0 bg-black p-4 flex flex-col justify-center space-y-3 z-35 animate-fade-in">
+          <div class="border-b border-stone-900 pb-1.5">
+            <p id="choice-prompt" class="text-red-500 font-bold text-[11px] md:text-xs uppercase tracking-widest text-glow">
+              죽음의 분기점 — 선택을 단행하십시오.
+            </p>
+          </div>
+          <div id="choice-buttons" class="grid grid-cols-1 gap-2 overflow-y-auto max-h-[110px] pr-1">
+            <!-- Choices injected -->
+          </div>
+        </div>
+
+        <!-- Choice Result Transition Screen (Pitch Black as well) -->
+        <div id="result-overlay" class="hidden absolute inset-0 bg-stone-950 p-4 flex flex-col justify-center space-y-3 z-40">
+          <p class="text-[10px] text-red-600 font-bold uppercase tracking-widest">피해갈 수 없는 업보</p>
+          <p id="result-text" class="text-stone-300 text-xs md:text-sm leading-relaxed break-keep font-semibold">
+            <!-- Results dynamically inserted -->
+          </p>
+          <div class="flex justify-end">
+            <button onclick="confirmChoiceResult()" class="bg-red-950 hover:bg-red-900 text-stone-100 px-4 py-2 rounded-lg text-xs font-bold shadow-md tracking-wider border border-red-800/40 transition">
+              계속 나아가기
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Ending Screen -->
+    <div id="screen-ending" class="hidden w-full bg-stone-950 border border-red-950/40 rounded-xl p-5 md:p-8 flex flex-col items-center text-center space-y-5 backdrop-blur shadow-2xl relative overflow-hidden">
+      <!-- Background Graphic decoration -->
+      <div class="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center select-none">
+        <div id="ending-bg-symbol" class="w-80 h-80 border-4 border-red-950 rounded-full flex items-center justify-center font-bold text-7xl text-red-900/10">
+          光復
+        </div>
+      </div>
+
+      <div class="space-y-1 z-10">
+        <span class="bg-red-950 border border-red-900 text-red-400 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider">임무 보고서 결말</span>
+        <h2 id="ending-title" class="text-xl md:text-2xl font-black text-stone-100 pt-1 tracking-tight"></h2>
+      </div>
+
+      <!-- Ending visual card -->
+      <div class="w-full max-w-sm bg-stone-900/50 border border-stone-800/80 p-4 rounded-xl space-y-2 z-10">
+        <p id="ending-description" class="text-stone-300 text-xs md:text-sm leading-relaxed break-keep"></p>
+      </div>
+
+      <!-- Final Score and Metrics Panel -->
+      <div class="w-full max-w-md bg-stone-950 border border-red-950/20 p-4 rounded-xl space-y-4 z-10">
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-stone-900/45 p-2.5 rounded-lg border border-stone-800">
+            <span class="block text-[10px] text-red-500 font-bold mb-0.5">애국심 수치</span>
+            <span id="final-patriotism" class="text-xl font-black font-mono text-red-400">0</span>
+          </div>
+          <div class="bg-stone-900/45 p-2.5 rounded-lg border border-stone-800">
+            <span class="block text-[10px] text-emerald-500 font-bold mb-0.5">생존력 수치</span>
+            <span id="final-survival" class="text-xl font-black font-mono text-emerald-400">0</span>
+          </div>
+        </div>
+
+        <div class="bg-red-950/20 p-4 rounded-lg border border-red-950/40 space-y-2.5">
+          <div>
+            <span class="block text-[10px] text-red-400 font-bold uppercase tracking-wider">조국 독립기여도 점수</span>
+            <div class="text-3xl font-black font-mono text-red-500 mt-0.5" id="final-score">0점</div>
+          </div>
+          <!-- HIGH SCORE INDICATOR -->
+          <div class="border-t border-red-950/30 pt-2 flex justify-between items-center px-1">
+            <span class="text-[10px] text-stone-500 font-bold">역대 최고 독립기여도 기록</span>
+            <span id="high-score-display" class="text-base font-mono font-extrabold text-red-400 text-glow">0점</span>
+          </div>
+          <p id="score-evaluation" class="text-stone-400 text-[11px] leading-normal pt-1 border-t border-stone-900/40"></p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="w-full max-w-xs pt-2 z-10">
+        <button onclick="restartGame()" class="w-full bg-red-950/80 hover:bg-red-900 text-stone-200 font-bold py-2.5 rounded-lg border border-red-800/30 shadow-lg text-xs tracking-wider transition">
+          다시 참혹한 기로로 돌어가기
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full border-t border-stone-950 bg-stone-950 py-2.5 text-center text-[10px] text-stone-600 tracking-wider">
+    &copy; 2026 경성의 새벽. All Rights Reserved.
+  </footer>
+
+  <!-- Web Audio Synthesis Logic and Dialog Database -->
+  <script>
+    // Global Audio Context & States
+    let audioCtx = null;
+    let bgmNode = null;
+    let masterGain = null;
+    let isMuted = true;
+
+    // Player State & High Score Tracker
+    let playerName = "한울";
+    let patriotism = 50;
+    let survival = 50;
+    let currentSceneIndex = 0;
+    let currentDialogueIndex = 0;
+    let highScore = 0; // In-memory session High Score
+
+    // Database containing Scenes with dialogues and choices
+    const gameDatabase = [
+      {
+        sceneId: 1,
+        title: "비밀 결사 밀회",
+        speaker: "나 (암호명 한울)",
+        dialogues: [
+          "경성의 차가운 피안개가 목덜미를 스치고 지나간다. 저 멀리 우리를 미행하는 비밀 순사들의 무거운 부츠 소리가 밤거리를 가득 메운다.",
+          "종로 약방 후원의 썩어들어가는 폐목조 기둥 뒤, 칠흑 속에서 불쑥 나타난 동지가 무섭도록 싸늘한 시선으로 사방을 연신 뒤돌아보고 있다.",
+          "\"속히 받게나... 수화랑 백 선생에게 가져가지 않으면 모두 몰살이야. 군경들이 이미 밀고자 한 명을 색출해 기밀을 알아냈네.\"",
+          "그는 피투성이가 된 거친 손으로 밀봉된 비밀 명부 가죽 봉투를 급히 밀어넣더니, 소름끼치는 침묵만을 남긴 채 비명소리와 함께 끌려갔다."
+        ],
+        illustration: `<svg class="w-full h-full text-stone-700 fill-current" viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100%" height="100%" fill="#0a0505" />
+          <!-- Creepy Red Mist -->
+          <path d="M-50 300 Q 200 220, 500 290 T 850 250" fill="none" stroke="#7f1d1d" stroke-width="60" opacity="0.25"/>
+          <path d="M0 320 Q 300 250, 600 330 T 900 280" fill="none" stroke="#450a0a" stroke-width="80" opacity="0.3"/>
+          <!-- Looming eerie giant shadowy eye in background (Japanese Empire Surveillance) -->
+          <path d="M 400 40 Q 500 90, 600 40 Q 500 -10, 400 40 Z" fill="#ef4444" opacity="0.08"/>
+          <circle cx="500" cy="40" r="10" fill="#dc2626" opacity="0.15"/>
+          <!-- Eerie alley walls -->
+          <path d="M 0 350 L 180 80 L 250 0 L 0 0 Z" fill="#140b0b"/>
+          <path d="M 800 350 L 620 100 L 580 0 L 800 0 Z" fill="#140b0b"/>
+          <!-- Silhouette of two anxious whispering agents -->
+          <!-- Person 1 (Agent) -->
+          <path d="M 280 350 C 280 290, 300 230, 310 210 C 295 210, 290 205, 295 200 C 300 195, 330 195, 335 200 C 340 205, 335 210, 320 210 C 330 230, 350 290, 350 350 Z" fill="#030712"/>
+          <!-- Person 2 (Player) -->
+          <path d="M 440 350 C 440 300, 420 240, 410 220 C 425 220, 430 215, 425 210 C 420 205, 390 205, 385 210 C 380 215, 385 220, 400 220 C 390 240, 370 300, 370 350 Z" fill="#02040a"/>
+          <!-- Distant creepy red street lamp -->
+          <line x1="620" y1="100" x2="620" y2="180" stroke="#7f1d1d" stroke-width="3"/>
+          <path d="M 605 180 L 635 180 L 620 160 Z" fill="#991b1b"/>
+          <circle cx="620" cy="190" r="25" fill="#ef4444" opacity="0.25" class="animate-pulse"/>
+        </svg>`,
+        question: "서둘러 자리를 벗어나야 한다. 이 기밀 편지투봉을 순사들의 삼엄한 감시망 속에서 어떻게 보관하겠는가?",
+        choices: [
+          {
+            text: "낡은 모직 코트 안쪽을 거칠게 찢어 깊숙이 밀어 넣는다.",
+            effect: { patriotism: 15, survival: 15 },
+            resultText: "투봉을 모포 안감 사이에 무사히 안착시켰다. 겉보기에 완벽하나 몸수색에는 위험할 수 있다."
+          },
+          {
+            text: "가지고 다니던 닳아빠진 어학사전의 두꺼운 속지를 찢어 끼워넣는다.",
+            effect: { patriotism: 5, survival: 25 },
+            resultText: "단순 책 구경꾼처럼 보여 지식인 검문용 위장을 극대화시켰다. 생존 가능성이 비약적으로 늘어났다."
+          },
+          {
+            text: "모자의 내부 밴드를 뜯어내고 그 뒤에 바짝 붙인다.",
+            effect: { patriotism: 25, survival: 5 },
+            resultText: "의열단의 가장 유서 깊고 과감한 보관법이다. 들통나면 파멸이지만 대담한 자에게 어울린다."
+          }
+        ]
+      },
+      {
+        sceneId: 2,
+        title: "경성역 검문소",
+        speaker: "일제 순사",
+        dialogues: [
+          "경성역 지하 입구에 깔린 서슬 퍼런 붉은 조명은 도살장 같은 불길함을 내리쬐고 있다.",
+          "지나가는 사람들을 훑어보는 순사들의 안광은 섬뜩하고 잔인하게 번뜩인다. 거역하는 기색을 보인 조선인이 모퉁이에서 피를 흘리며 쓰러져 있다.",
+          "\"거기 멈춰라! 남루한 서적 가방을 든 자, 모자를 벗고 신분증과 통행 허가증을 제시해라!\"",
+          "눈이 멀 듯이 삼엄한 조명 뒤로, 가차 없는 헌병 장교의 무거운 칼날 그림자가 내 목덜미 바로 앞까지 뻗어왔다."
+        ],
+        illustration: `<svg class="w-full h-full text-stone-700 fill-current" viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100%" height="100%" fill="#0a0707" />
+          <!-- Harsh red searchlight -->
+          <polygon points="400,-50 150,350 650,350" fill="#dc2626" opacity="0.15" />
+          <!-- Silhouette of Japanese officer with glowing red eyes and sword -->
+          <path d="M 280 350 C 280 270, 305 200, 315 180 C 295 178, 290 168, 305 160 C 320 152, 345 152, 355 160 C 370 168, 360 178, 345 180 C 360 210, 380 270, 380 350 Z" fill="#090505"/>
+          <!-- Military cap -->
+          <path d="M 295 160 L 365 160 L 350 145 L 310 145 Z" fill="#1e1b1b"/>
+          <!-- Glowing red eyes on the officer silhouette (makes it scary) -->
+          <circle cx="323" cy="168" r="3.5" fill="#ff0000" />
+          <circle cx="337" cy="168" r="3.5" fill="#ff0000" />
+          <!-- Long creepy sword shadow -->
+          <path d="M 345 230 L 210 330 L 205 325 L 340 225 Z" fill="#000" opacity="0.9"/>
+          <!-- Shadow of handcuffed civilian kneeling in fear (the player/suspect) -->
+          <path d="M 520 350 C 510 320, 500 280, 480 260 C 470 250, 460 250, 455 240 C 450 230, 465 210, 475 210 C 485 210, 490 220, 495 235 C 505 250, 530 300, 535 350 Z" fill="#111" opacity="0.85"/>
+        </svg>`,
+        question: "순사 부장과 정면으로 대면했다. 의심을 회피하기 위해 취할 가장 자연스럽고 긴급한 수단은?",
+        choices: [
+          {
+            text: "차분한 어조의 게이오 대학 학생 신분증을 내밀며 지식인 행세를 한다.",
+            effect: { patriotism: 5, survival: 20 },
+            resultText: "유창한 일본어 발음 덕분에 무사히 심문을 가볍게 피했습니다. 그들은 꼼꼼한 검색 대신 혀를 차며 지나치라 합니다."
+          },
+          {
+            text: "일부러 무거운 소지품 가방을 바닥에 떨어트려 동전과 인삼 뿌리를 사방에 어지럽힌다.",
+            effect: { patriotism: 15, survival: 10 },
+            resultText: "소란을 일으키자 시선이 분산되어 검문소 전체가 일시 마비되었습니다. 당황한 순사는 짜증을 내며 당신을 밀쳐 보냅니다."
+          },
+          {
+            text: "숨겨둔 주머니 시계를 꺼내 만지작거리며 넌지시 뇌물의 신호를 던진다.",
+            effect: { patriotism: -5, survival: 30 },
+            resultText: "뇌물은 국경을 초월한 비상수단입니다. 탐욕스러운 검문소 순사장의 호주머니에 금시계가 꽂히고 길은 순식간에 뚫립니다."
+          }
+        ]
+      },
+      {
+        sceneId: 3,
+        title: "비밀 아지트 '수화랑'",
+        speaker: "동지 단아",
+        dialogues: [
+          "경성 뒷골목, 유곽으로 위장된 '수화랑'의 미닫이문 틈새로 음산한 바람소리가 귀신 울음처럼 통곡한다.",
+          "숨겨진 침실 한구석, 동지 단아가 벌벌 떠는 손으로 장롱의 비밀 상자를 부여잡으며 공포에 잠식되어 가고 있다.",
+          "\"한울 씨... 들켰어요. 일본군 헌병 사냥개들의 군화 소리가 가옥 뒤편 하수구까지 에워싸 들어오고 있어요.\"",
+          "명부를 지키기 위해 비명 속에서 동지를 희생할 것인가, 혹은 파멸이 뻔한 극한의 추격전 속으로 사선을 뚫고 뛰어들 것인가."
+        ],
+        illustration: `<svg class="w-full h-full text-stone-700 fill-current" viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100%" height="100%" fill="#140e0e" />
+          <!-- Shoji Screen with blood-red backlight -->
+          <rect x="80" y="30" width="640" height="290" fill="#7f1d1d" opacity="0.4" stroke="#450a0a" stroke-width="14" />
+          <!-- Grids -->
+          <line x1="180" y1="30" x2="180" y2="320" stroke="#450a0a" stroke-width="5"/>
+          <line x1="280" y1="30" x2="280" y2="320" stroke="#450a0a" stroke-width="5"/>
+          <line x1="380" y1="30" x2="380" y2="320" stroke="#450a0a" stroke-width="5"/>
+          <line x1="480" y1="30" x2="480" y2="320" stroke="#450a0a" stroke-width="5"/>
+          <line x1="580" y1="30" x2="580" y2="320" stroke="#450a0a" stroke-width="5"/>
+          <line x1="80" y1="120" x2="720" y2="120" stroke="#450a0a" stroke-width="5"/>
+          <line x1="80" y1="210" x2="720" y2="210" stroke="#450a0a" stroke-width="5"/>
+          <!-- Shadows of military bayonets and soldiers pushing through from outside (Terrifying) -->
+          <!-- Soldier 1 Shadow -->
+          <path d="M 120 320 C 120 240, 150 180, 170 160 L 150 130 L 190 130 L 180 160 C 200 180, 220 240, 220 320 Z" fill="#000" opacity="0.85"/>
+          <!-- Bayonet/rifle pointing in -->
+          <line x1="100" y1="180" x2="280" y2="150" stroke="#000" stroke-width="10" opacity="0.9"/>
+          <polygon points="280,150 270,146 300,148" fill="#111" />
+          <!-- Dan-a silhouette recoiling in extreme fear inside -->
+          <path d="M 480 320 C 470 260, 490 220, 520 200 C 505 195, 510 185, 525 185 C 540 185, 545 195, 535 200 C 555 220, 570 260, 560 320 Z" fill="#050303"/>
+          <!-- Splashes of blood-like splatter on screen -->
+          <path d="M 330 180 Q 340 160, 360 170 T 400 150" fill="none" stroke="#991b1b" stroke-width="20" opacity="0.7"/>
+        </svg>`,
+        question: "포위망은 점점 좁혀지고 왜경 수십 명이 들이닥칠 일보직전이다. 여기서 어떤 핵심 결정을 선언하겠는가?",
+        choices: [
+          {
+            text: "밀고 명부를 화로에 던져 아예 흔적조차 불태우고 무장 연행을 준비한다.",
+            effect: { patriotism: 30, survival: -10 },
+            resultText: "자신을 희생하여 동지들의 이름을 지켜냈으나 신체적 고초가 확실해졌습니다."
+          },
+          {
+            text: "단아 동지를 밀치고 뒤뜰의 무너진 담벼락과 배수로 통로를 이용해 도피를 이끈다.",
+            effect: { patriotism: 15, survival: 20 },
+            resultText: "현명한 동지 구조와 도주의 길을 열었습니다. 극적인 추격전을 유도합니다."
+          },
+          {
+            text: "숨겨진 비밀 지하실의 두껍게 닫힌 이중 함정 바닥 아래로 명부를 묻고, 미인계를 쓴 유흥장으로 위장한다.",
+            effect: { patriotism: 20, survival: 10 },
+            resultText: "영리하고 침착한 은폐 공작을 전개하였습니다. 헌병대 장교를 교란시킵니다."
+          }
+        ]
+      },
+      {
+        sceneId: 4,
+        title: "최후의 선택 (경성의 새벽)",
+        speaker: "나 (암호명 한울)",
+        dialogues: [
+          "피투성이가 되어 지붕을 달리는 내 몸 뒤로 헌병들의 괴기스러운 미소와 비정한 총소리가 연신 빗발친다.",
+          "다리 입구에 서니 왜경의 수많은 해골 같은 위압적 전차가 가로막고, 수면 아래로 시커먼 심연의 강이 보인다.",
+          "강 아래에서는 마치 앞서 처형당한 이름 모를 의열단 동지들의 무덤인 양 검은 물귀신 같은 그림자들이 몸부림친다.",
+          "지독하게 무서운 죽음의 안개를 헤치고 나아가 저격병들의 차가운 총탄을 물리치며 붉은 새벽을 맞이할 기로."
+        ],
+        illustration: `<svg class="w-full h-full text-stone-700 fill-current" viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100%" height="100%" fill="#0a0505" />
+          <!-- Red sunrise glow (sinister blood-like crimson) -->
+          <circle cx="800" cy="80" r="180" fill="#991b1b" opacity="0.3" />
+          <!-- Desolate Bridge silhouette -->
+          <rect x="0" y="270" width="800" height="80" fill="#140b0b" />
+          <!-- Deep blood-like river flow -->
+          <path d="M 0 320 C 300 290, 500 340, 800 310" stroke="#7f1d1d" stroke-width="15" fill="none" opacity="0.5"/>
+          <!-- Shadowy creepy hands reaching up from the riverbed -->
+          <path d="M 200 320 L 210 270 M 210 270 L 195 250 M 210 270 L 210 245 M 210 270 L 225 255" stroke="#000" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+          <path d="M 350 310 L 340 250 M 340 250 L 320 235 M 340 250 L 345 225 M 340 250 L 360 235" stroke="#000" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+          <!-- Silhouette of running desperate player -->
+          <path d="M 480 270 C 475 250, 465 225, 470 215 C 475 205, 485 205, 480 215 C 475 225, 470 250, 460 270 Z" fill="#fff" opacity="0.85"/>
+          <!-- Menacing sniper scope laser locked on player's back -->
+          <circle cx="475" cy="215" r="12" stroke="#ef4444" stroke-width="2" fill="none" class="animate-ping"/>
+          <line x1="475" y1="190" x2="475" y2="240" stroke="#ef4444" stroke-width="1.5"/>
+          <line x1="450" y1="215" x2="500" y2="215" stroke="#ef4444" stroke-width="1.5"/>
+          <!-- Creepy sniper silhouette on the left far end -->
+          <path d="M 50 270 C 50 250, 60 240, 70 235 L 120 235 L 120 240 L 70 245 C 70 255, 80 265, 80 270 Z" fill="#000"/>
+        </svg>`,
+        question: "마지막 동이 트는 경성의 새벽녘, 눈앞의 저격병을 돌파하고 밀서를 무사히 인계하기 위한 필살의 선택은?",
+        choices: [
+          {
+            text: "차가운 얼음 강물 속으로 주저 없이 뛰어들어 영하의 물길을 타고 국경선 너머로 흐른다.",
+            effect: { patriotism: 30, survival: 20 },
+            resultText: "고통스럽고 냉혹한 빙하의 탈출입니다. 온몸이 얼어붙었으나 사선을 돌파했습니다!"
+          },
+          {
+            text: "동지들을 지키기 위해 가지고 있던 최후의 폭약을 꺼내 경성역 헌병 전초기지를 향해 역투척하여 장렬히 교전한다.",
+            effect: { patriotism: 50, survival: -30 },
+            resultText: "불꽃 같은 독립 투사로서의 최후를 장식합니다. 당신의 폭음은 수많은 잠든 경성 시민들을 깨웠습니다."
+          },
+          {
+            text: "인근 시장통에 밀서를 던져둔 상자에 숨긴 뒤, 정장 옷을 벗고 무고한 지동차 정비공 무리에 섞여 현장을 우회한다.",
+            effect: { patriotism: 15, survival: 40 },
+            resultText: "극단의 생존술과 위장 전술을 통해 명부도 살리고 목숨도 지켜내 장기전을 준비합니다."
+          }
+        ]
+      }
+    ];
+
+    // Typist effect
+    let typingTimer = null;
+    function typeWriter(text, elementId, speed = 25, callback) {
+      const element = document.getElementById(elementId);
+      element.innerHTML = "";
+      element.classList.add("cursor-blink");
+      let i = 0;
+      
+      if (typingTimer) clearInterval(typingTimer);
+      
+      typingTimer = setInterval(() => {
+        if (i < text.length) {
+          element.innerHTML += text.charAt(i);
+          if (i % 3 === 0 && !isMuted) {
+            playTickSound();
+          }
+          i++;
+        } else {
+          clearInterval(typingTimer);
+          element.classList.remove("cursor-blink");
+          if (callback) callback();
+        }
+      }, speed);
+    }
+
+    // Advanced Sound Engine (Ominous, spine-chilling minor synthetic pad and panic heartbeat)
+    let synthInterval = null;
+    let heartbeatInterval = null;
+
+    function initAudio() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(0, audioCtx.currentTime); // Handle fade-in
+      masterGain.connect(audioCtx.destination);
+    }
+
+    function startAmbientBgm() {
+      if (!audioCtx) return;
+      
+      if (synthInterval) clearInterval(synthInterval);
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+
+      // Low, horror minor frequency nodes (Bleak A0/A1 and tensional Eb resonance)
+      const droneNotes = [55.00, 110.00, 77.78, 155.56]; // Highly clashing A minor 5th & Eb tension
+      const activeOscillators = [];
+
+      // Dark low-pass Sawtooth Pad for ominous fog simulation
+      droneNotes.forEach((freq, idx) => {
+        try {
+          const osc = audioCtx.createOscillator();
+          const filter = audioCtx.createBiquadFilter();
+          const gainNode = audioCtx.createGain();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(140 + (idx * 25), audioCtx.currentTime);
+          filter.Q.setValueAtTime(4, audioCtx.currentTime);
+
+          gainNode.gain.setValueAtTime(0.03, audioCtx.currentTime);
+
+          osc.connect(filter);
+          filter.connect(gainNode);
+          gainNode.connect(masterGain);
+
+          osc.start(0);
+          activeOscillators.push({ osc, gainNode });
+        } catch(e) {}
+      });
+
+      // LFO modulation to simulate terrifying wind & chilling air
+      let tick = 0;
+      synthInterval = setInterval(() => {
+        if (!audioCtx || isMuted) return;
+        try {
+          const now = audioCtx.currentTime;
+          activeOscillators.forEach((item, idx) => {
+            const modVal = 0.025 + Math.sin(tick + idx) * 0.015;
+            item.gainNode.gain.linearRampToValueAtTime(modVal, now + 1.8);
+          });
+          tick += 0.4;
+        } catch(e) {}
+      }, 1800);
+
+      // Dread Heartbeat - Ominous 3.5 second periodic panic thudding
+      heartbeatInterval = setInterval(() => {
+        if (!audioCtx || isMuted) return;
+        try {
+          const now = audioCtx.currentTime;
+          triggerHeartbeat(now);
+          setTimeout(() => {
+            if (!isMuted) triggerHeartbeat(audioCtx.currentTime);
+          }, 320); // Quick distressed second thud
+        } catch(e) {}
+      }, 3200);
+
+      bgmNode = { oscillators: activeOscillators };
+    }
+
+    // Heavy bass drum sweep for physical tension thud
+    function triggerHeartbeat(time) {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(42, time); // Terrifyingly low frequency
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(55, time);
+
+        gain.gain.setValueAtTime(0.4, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.45);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(masterGain);
+
+        osc.start(time);
+        osc.stop(time + 0.5);
+      } catch(e) {}
+    }
+
+    function toggleAudio() {
+      const soundIcon = document.getElementById("sound-icon");
+      const soundText = document.getElementById("sound-text");
+      const controlDiv = document.getElementById("sound-control");
+
+      if (!audioCtx) {
+        initAudio();
+      }
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      isMuted = !isMuted;
+
+      if (isMuted) {
+        masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+        soundText.innerText = "BGM 켜기";
+        controlDiv.classList.remove("text-red-500", "bg-red-950/40", "border-red-900/60");
+        controlDiv.classList.add("text-red-400", "bg-stone-900", "border-stone-800");
+        soundIcon.innerHTML = `<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zm-8 5.77H2v6h4l5 5V4L6 9z"/>`;
+      } else {
+        startAmbientBgm();
+        masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+        masterGain.gain.linearRampToValueAtTime(0.24, audioCtx.currentTime + 1.0); // Boosted mix output
+        
+        soundText.innerText = "BGM 중지";
+        controlDiv.classList.add("text-red-500", "bg-red-950/40", "border-red-900/60");
+        controlDiv.classList.remove("text-red-400", "bg-stone-900", "border-stone-800");
+        soundIcon.innerHTML = `<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>`;
+        
+        playBeep(180, 0.25); // Ominous startup beep
+      }
+    }
+
+    // Soft synth clicks/beeps
+    function playBeep(freq, duration) {
+      if (!audioCtx || isMuted) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch(e) {}
+    }
+
+    function playTickSound() {
+      if (!audioCtx || isMuted) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.frequency.setValueAtTime(90 + Math.random() * 60, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.012, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.03);
+      } catch(e) {}
+    }
+
+    function playDramaStinger() {
+      if (!audioCtx || isMuted) return;
+      try {
+        const now = audioCtx.currentTime;
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        // Highly dissonant and nerve-shattering minor second interval
+        osc1.frequency.setValueAtTime(98.00, now); // G2
+        osc2.frequency.setValueAtTime(103.83, now); // G#2
+        
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
+        
+        osc1.start();
+        osc2.start();
+        osc1.stop(now + 1.8);
+        osc2.stop(now + 1.8);
+      } catch(e) {}
+    }
+
+    // Engine Core Controls
+    function startGame() {
+      const nameInput = document.getElementById("player-name").value.trim();
+      if (nameInput) {
+        playerName = nameInput;
+      }
+      
+      patriotism = 50;
+      survival = 50;
+      currentSceneIndex = 0;
+      currentDialogueIndex = 0;
+
+      // Swap screen views
+      document.getElementById("stats-panel").classList.remove("hidden");
+      document.getElementById("screen-start").classList.add("hidden");
+      document.getElementById("screen-game").classList.remove("hidden");
+      document.getElementById("screen-ending").classList.add("hidden");
+
+      // Reset dynamic layouts
+      document.getElementById("choices-overlay").classList.add("hidden");
+      document.getElementById("result-overlay").classList.add("hidden");
+      document.getElementById("dialogue-content").classList.remove("opacity-0");
+      document.getElementById("dialogue-actions").classList.remove("opacity-0");
+
+      updateStats();
+      loadScene();
+
+      if (!audioCtx) {
+        initAudio();
+      }
+    }
+
+    function updateStats() {
+      patriotism = Math.max(0, Math.min(100, patriotism));
+      survival = Math.max(0, Math.min(100, survival));
+
+      document.getElementById("stat-patriotism").innerText = patriotism;
+      document.getElementById("stat-patriotism-bar").style.width = patriotism + "%";
+      
+      document.getElementById("stat-survival").innerText = survival;
+      document.getElementById("stat-survival-bar").style.width = survival + "%";
+    }
+
+    function loadScene() {
+      const scene = gameDatabase[currentSceneIndex];
+      currentDialogueIndex = 0;
+
+      document.getElementById("scene-illustration").innerHTML = scene.illustration;
+      document.getElementById("scene-tag").innerText = scene.title;
+      document.getElementById("current-scene-num").innerText = scene.sceneId;
+      document.getElementById("speaker-name").innerText = scene.speaker;
+
+      document.getElementById("choices-overlay").classList.add("hidden");
+      document.getElementById("result-overlay").classList.add("hidden");
+      document.getElementById("dialogue-content").classList.remove("opacity-0");
+      document.getElementById("dialogue-actions").classList.remove("opacity-0");
+      document.getElementById("btn-next").style.display = "flex";
+
+      playDramaStinger();
+      renderDialogue();
+    }
+
+    function renderDialogue() {
+      const scene = gameDatabase[currentSceneIndex];
+      const text = scene.dialogues[currentDialogueIndex];
+      
+      document.getElementById("dialogue-steps").innerText = `${currentDialogueIndex + 1} / ${scene.dialogues.length}`;
+      typeWriter(text, "dialogue-text", 25, null);
+    }
+
+    function nextDialogue() {
+      const scene = gameDatabase[currentSceneIndex];
+      
+      if (currentDialogueIndex < scene.dialogues.length - 1) {
+        currentDialogueIndex++;
+        renderDialogue();
+      } else {
+        showChoices();
+      }
+    }
+
+    function showChoices() {
+      const scene = gameDatabase[currentSceneIndex];
+      
+      document.getElementById("dialogue-content").classList.add("opacity-0");
+      document.getElementById("dialogue-actions").classList.add("opacity-0");
+
+      const choicesOverlay = document.getElementById("choices-overlay");
+      const choiceButtons = document.getElementById("choice-buttons");
+      choiceButtons.innerHTML = "";
+
+      document.getElementById("choice-prompt").innerText = `운명의 기로 — ${scene.question}`;
+
+      scene.choices.forEach((choice, index) => {
+        const btn = document.createElement("button");
+        btn.className = "w-full text-left bg-stone-950 hover:bg-red-950/30 border border-red-950/40 hover:border-red-800/60 p-3 rounded-lg text-stone-300 hover:text-red-200 text-xs transition duration-150 transform hover:translate-x-0.5 flex items-start space-x-2";
+        btn.innerHTML = `
+          <span class="bg-red-950/40 text-red-400 border border-red-800/50 rounded px-1.5 py-0.2 text-[10px] font-mono mt-0.5">${index + 1}</span>
+          <span class="flex-grow font-semibold tracking-wide">${choice.text}</span>
+        `;
+        btn.onclick = () => selectChoice(choice);
+        choiceButtons.appendChild(btn);
+      });
+
+      choicesOverlay.classList.remove("hidden");
+      playBeep(150, 0.35); // Low suspense chime
+    }
+
+    function selectChoice(choice) {
+      patriotism += choice.effect.patriotism;
+      survival += choice.effect.survival;
+      updateStats();
+
+      const choicesOverlay = document.getElementById("choices-overlay");
+      choicesOverlay.classList.add("hidden");
+
+      const resultOverlay = document.getElementById("result-overlay");
+      document.getElementById("result-text").innerText = `"${choice.resultText}"`;
+      
+      resultOverlay.classList.remove("hidden");
+      playBeep(220, 0.4); 
+    }
+
+    function confirmChoiceResult() {
+      document.getElementById("result-overlay").classList.add("hidden");
+
+      if (currentSceneIndex < gameDatabase.length - 1) {
+        currentSceneIndex++;
+        loadScene();
+      } else {
+        triggerEnding();
+      }
+    }
+
+    function triggerEnding() {
+      document.getElementById("screen-game").classList.add("hidden");
+      document.getElementById("stats-panel").classList.add("hidden");
+      
+      const endingScreen = document.getElementById("screen-ending");
+      endingScreen.classList.remove("hidden");
+
+      // Score Calculation
+      const totalScore = Math.max(0, Math.floor((patriotism * 1.5) + survival));
+      
+      // Update session High Score
+      if (totalScore > highScore) {
+        highScore = totalScore;
+      }
+
+      document.getElementById("high-score-display").innerText = `${highScore}점`;
+
+      let endingTitle = "";
+      let endingDescription = "";
+      let evaluation = "";
+      let bgSymbolText = "光復";
+
+      if (patriotism >= 80 && survival >= 75) {
+        endingTitle = "새벽의 해방자: 어둠을 걷어낸 불멸의 별";
+        endingDescription = `${playerName} 동지여, 당신의 탁월한 위장 전술과 극도의 충성심은 결국 경성에 찬란한 빛을 안겨주었습니다. 헌병대 장교의 명단은 비밀 독립 사령부로 완전히 배송되어 내부 첩자들을 성공적으로 솎아내었습니다. 당신은 모진 고문에서도, 얼어붙는 왜경들의 검문 속에서도 당당하게 살아남아 조국의 독립 선언식 맨 앞줄에 태극기를 휘날리며 당당히 섰습니다. 당신의 숭고한 활약은 역사의 비사에 기록되어 영원히 기억될 것입니다.`;
+        evaluation = `최고의 독립 영웅 등급입니다! 뛰어난 작전 수행 능력과 초인적인 생존 감각으로 밀서를 수송하는 데 완벽히 성공하며 단 한 사람의 동지도 잃지 않았습니다.`;
+        bgSymbolText = "光復";
+      } else if (patriotism >= 85 && survival < 50) {
+        endingTitle = "붉은 진달래: 가슴 저린 희생의 꽃";
+        endingDescription = `왜경들의 총구가 당신의 가슴을 헤집기 직전, 당신은 마지막 힘을 모아 밀고 명부를 화염 속에 던져 넣어 무기화했습니다. 동지들의 안전은 확보되었으나, 정작 ${playerName} 당신은 쏟아지는 왜경들의 총탄 속에서 차가운 밤하늘을 등지고 쓰러졌습니다. 당신이 남긴 마지막 숨결은 경성역에 피어오르는 안개가 되었으며, 훗날 동지들은 승전 소식과 함께 눈물로 당신의 이름을 불렀습니다. 몸은 바스러졌으나 정신은 하늘에 남아 승리의 아침을 비춥니다.`;
+        evaluation = `장렬한 애국 순국선열의 길입니다. 비록 목숨은 수호하지 못했으나, 독립운동 동지들의 모든 인맥과 정보망을 안전하게 지키며 역사에 거대한 족적을 남겼습니다.`;
+        bgSymbolText = "義烈";
+      } else if (patriotism < 50 && survival >= 85) {
+        endingTitle = "침묵의 밤: 회색빛 생존자";
+        endingDescription = `${playerName} 동지는 삼엄한 왜경들의 검문소와 무장 경계 태세 속에서 뛰어난 생존주의적 재치를 빌려 목숨을 건지는 데 완벽히 성공했습니다. 그러나 그 와중에 독립 밀서의 일부 장이 왜경의 손에 넘어가거나 소실되었고, 수화랑 아지트는 심각한 타격을 입었습니다. 살아남은 당신은 차가운 타향에서 독립을 맞이했으나, 끝끝내 지켜내지 못한 동지들의 슬픈 얼굴이 평생 당신의 불면증이 되어 따라다닐 것입니다.`;
+        evaluation = `생존 위주의 실리파 요원 엔딩입니다. 본인의 생명은 보전하였으나, 정보가 부분 누출되어 독립 조직에 큰 상흔을 남겼습니다.`;
+        bgSymbolText = "生存";
+      } else if (patriotism <= 45 && survival <= 45) {
+        endingTitle = "경성의 망령: 지워진 기록";
+        endingDescription = `작전은 완벽하게 수포로 돌아갔습니다. ${playerName} 당신은 냉혹한 고문실 한가운데에서 의식을 잃어가고 있으며, 독립 밀서는 헌병대 소장 책상 위에 정렬되어 있습니다. 동지들은 하나둘씩 밀고당하기 시작했고, 조국의 새벽은 깊은 침묵 속으로 영영 가라앉았습니다. 역사는 당신의 암호명조차 기록하지 못했으며, 그 어떤 해방의 찬가도 당신이 갇힌 차가운 콘크리트 감옥 벽을 뚫지 못했습니다.`;
+        evaluation = `가장 안타까운 비극의 엔딩입니다. 헌병대의 강력한 함정 수사에 말려 작전 기밀이 파쇄되고 독립 지부 전체가 붕괴했습니다.`;
+        bgSymbolText = "破滅";
+      } else {
+        endingTitle = "새벽의 가교: 다음 세대를 향한 희망";
+        endingDescription = `수많은 우여곡절 끝에 당신은 반쪽짜리 명부를 간신히 독립 기지에 도달시켰습니다. 몸 곳곳에는 부상과 흉터가 가득하고 작전의 일부 핵심 거점은 소실되었지만, ${playerName} 당신의 희생은 새로운 독립 투사들이 무장을 갖추어 일어날 수 있는 견고한 초석이 되어 주었습니다. 당신은 해방된 경성 거리를 조용히 거닐며, 평범한 시민의 한 사람으로서 자유를 만끽합니다. 가슴팍에 남은 화약 냄새만이 그 시절의 투쟁을 기억해 줍니다.`;
+        evaluation = `균형 잡힌 성과를 거두었습니다. 비록 일부 피해는 있었으나 조국 광복을 향한 마중물 역할을 톡톡히 해냈습니다.`;
+        bgSymbolText = "希望";
+      }
+
+      // Inject values to UI
+      document.getElementById("ending-title").innerText = endingTitle;
+      document.getElementById("ending-description").innerText = endingDescription;
+      document.getElementById("final-patriotism").innerText = patriotism;
+      document.getElementById("final-survival").innerText = survival;
+      document.getElementById("final-score").innerText = totalScore + "점";
+      document.getElementById("score-evaluation").innerText = evaluation;
+      document.getElementById("ending-bg-symbol").innerText = bgSymbolText;
+
+      playEndingSound(totalScore);
+    }
+
+    function playEndingSound(score) {
+      if (!audioCtx || isMuted) return;
+      try {
+        const now = audioCtx.currentTime;
+        const o1 = audioCtx.createOscillator();
+        const o2 = audioCtx.createOscillator();
+        const o3 = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        
+        o1.connect(g);
+        o2.connect(g);
+        o3.connect(g);
+        g.connect(audioCtx.destination);
+
+        if (score >= 200) {
+          // Triumphant yet heavy Major chord
+          o1.frequency.setValueAtTime(220.00, now); // A3
+          o2.frequency.setValueAtTime(277.18, now); // C#4
+          o3.frequency.setValueAtTime(329.63, now); // E4
+        } else if (score < 100) {
+          // Horrific diminished chord
+          o1.frequency.setValueAtTime(196.00, now); // G3
+          o2.frequency.setValueAtTime(233.08, now); // Bb3
+          o3.frequency.setValueAtTime(277.18, now); // Db4
+        } else {
+          // Sad/Tragic A Minor
+          o1.frequency.setValueAtTime(220.00, now); // A3
+          o2.frequency.setValueAtTime(261.63, now); // C4
+          o3.frequency.setValueAtTime(329.63, now); // E4
+        }
+
+        g.gain.setValueAtTime(0.22, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 3.5);
+        
+        o1.start(); o2.start(); o3.start();
+        o1.stop(now + 3.5); o2.stop(now + 3.5); o3.stop(now + 3.5);
+      } catch(e) {}
+    }
+
+    function restartGame() {
+      document.getElementById("screen-ending").classList.add("hidden");
+      document.getElementById("screen-start").classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
